@@ -6,4 +6,4 @@ import os
 for line in sys.stdin:
 	sys.stdout.write(line)
 
-os.system("date")
+sys.stdout.write(os.system("date"))
