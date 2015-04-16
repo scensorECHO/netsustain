@@ -1,50 +1,49 @@
 #! /usr/bin/python
-
-import sys
-import os
 import subprocess
-
-# for line in sys.stdin:
-# 	sys.stdout.write(line)
 
 ssids = ["OCC-Internet","ATT3X792x9", "grizznet"]
 
-# os.system("date")
-subprocess.call("date")
-#subprocess.call(["cd","/home/tom/"])
-#subprocess.call(["ls","-l","-a","/home/tom"])
-# out = subprocess.check_output(["ls","-l","-a","/home/tom"],universal_newlines=True).split('\n')
-# #directory = []
-# for one in out:
-# 	print(one)
+def devSelect():
+	str3 = subprocess.check_output(["iw","dev"],universal_newlines=True).split('\n')
+	for line in str3:
+		if "Interface " in str3:
+			str3 = str3.split( )[1]
+			return str3
+		else:
+			return "failed"
 
-# str1 = subprocess.check_output(["ip","addr"],universal_newlines=True).split('\n')
-# for i in str1:
-#    print(i)
+def findNetwork(dev):
+	selection = ""
+	str4 = subprocess.check_output(["iw","dev",dev,"scan","|","grep","SSID"],universal_newlines=True).split('\n')
+	for ssid in str4:
+		if ssid in ssids:
+			selection=ssid
+			return connect(selection)
 
-# str2 = subprocess.check_output(["ip","addr"],universal_newlines=True).split('\n')
-# for i in str2:
-#    if "inet" in i:
-#        myi = (i.split(' '))
-#        print(myi[4]+" "+myi[5]+" "+myi[-1])
+def connect(dev, sel):
+	connection = subprocess.check_output(["iw","dev",dev,"connect","-w",sel],universal_newlines=True).split('\n')
+	if "connected" in connection:
+		print("Successfully connected")
+		return true
+	else:
+		print("Failed to connect")
+		return false
 
-str3 = subprocess.check_output(["iw","dev"])
-if "Interface " in str3:
-	str3 = x[10:]
+def runDHCP(dev):
+	result = subprocess.check_output(["dhcpcd",dev],universal_newlines=True).split('\n')
+	if "leased" in result:
+		return true
+	else:
+		return false
 
-def findNetwork():
-selection = ""
-str4 = subprocess.check_output(["iw","dev",str3,"scan","|","grep","SSID"])
-for ssid in str4:
-	if ssid in ssids:
-		selection=ssid
-		connect()
-
-def connect():
-connection = subprocess.check_output("iw","dev",str3,"connect",selection)
-if "connected" in connection:
-	print("Successfully connected")
-	return true
+device = devSelect()
+if "w" in device:
+	if(findNetwork(device)):
+		if(runDHCP(device)):
+			print("Success")
+		else:
+			print("DHCP failure")
+	else:
+		print("Network connection error")
 else:
-	print("Failed to connect")
-	return false
+	print("No wireless devices found")
