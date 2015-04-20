@@ -75,21 +75,25 @@ def runDHCP(dev, killed=0):
 		log.append('No lease acquired')
 		return 0
 
+def writeLog():
+	with open("/etc/netsustain/log", "a") as logfile:
+		for line in log:
+			logfile.write(line)
+
 
 #wifi device setup and connection
 device = getWiFiDev()
-if "w" in device:
-	setupDevice(device)
-	if(findNetwork(device)):
-		if(runDHCP(device)):
-			print("Success")
+try:
+	if "w" in device:
+		setupDevice(device)
+		if(findNetwork(device)):
+			if(runDHCP(device)):
+				print("Success")
+			else:
+				print("DHCP failure")
 		else:
-			print("DHCP failure")
+			print("Network connection error")
 	else:
-		print("Network connection error")
-else:
-	print("No wireless devices found")
-
-with open("/etc/netsustain/log", "a") as logfile:
-    for line in log:
-    	logfile.write(line)
+		print("No wireless devices found")
+except:
+	writeLog()
